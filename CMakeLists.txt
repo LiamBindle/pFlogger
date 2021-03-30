@@ -27,18 +27,25 @@ set (CMAKE_MODULE_PATH
    ${CMAKE_SOURCE_DIR}/cmake
 )
 
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 include (PreventInSourceBuild)
 include (DefineCMakeDefaults)
 include (DefinePlatformDefaults)
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-find_package (GFTL REQUIRED)
-find_package (GFTL_SHARED REQUIRED)
-find_package (YAFYAML REQUIRED)
+if (NOT TARGET GFTL::gftl)
+  find_package (GFTL REQUIRED)
+endif ()
+if (NOT TARGET GFTL_SHARED::gftl-shared)
+  find_package (GFTL_SHARED REQUIRED)
+endif ()
+if (NOT TARGET YAFYAML::yafyaml)
+  find_package (YAFYAML REQUIRED)
+endif ()
 
 find_package (MPI QUIET)
-find_package (PFUNIT QUIET)
 
 #-----------------------------------
 # Set default Fortran compiler flags
@@ -65,7 +72,8 @@ endif ()
 add_subdirectory(src)
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
-if (PFUNIT_FOUND)
+if (BUILD_TESTING)
+  find_package (PFUNIT REQUIRED)
   enable_testing()
   if (NOT TARGET tests)
     add_custom_target(tests COMMAND ${CMAKE_CTEST_COMMAND})
